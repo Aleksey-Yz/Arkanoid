@@ -1,0 +1,17 @@
+// Alexey Tishaninov. All rights reserved.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Bonuses/BonusParent.h"
+#include "BonusDestroyCubes.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class ARKANOID_API ABonusDestroyCubes : public ABonusParent
+{
+	GENERATED_BODY()
+	
+};
