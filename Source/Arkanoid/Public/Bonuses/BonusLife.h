@@ -13,5 +13,12 @@ UCLASS()
 class ARKANOID_API ABonusLife : public ABonusParent
 {
 	GENERATED_BODY()
-	
+
+public:
+	ABonusLife();
+
+protected:
+	virtual void BonusAction(APaddle* Paddle) override;
+
+
 };

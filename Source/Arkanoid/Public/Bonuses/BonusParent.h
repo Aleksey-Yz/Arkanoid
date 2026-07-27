@@ -6,21 +6,41 @@
 #include "GameFramework/Actor.h"
 #include "BonusParent.generated.h"
 
-UCLASS()
+class APaddle;
+
+UCLASS(Blueprintable, Abstract)
 class ARKANOID_API ABonusParent : public AActor
 {
 	GENERATED_BODY()
+
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"));
+	UStaticMeshComponent* BonusMesh = nullptr;
 	
 public:	
-	// Sets default values for this actor's properties
+	
 	ABonusParent();
 
 protected:
-	// Called when the game starts or when spawned
+	
 	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor ) override;
+
+	void Move(const float DeltaTime);
+	virtual void BonusAction(APaddle* Paddle);
+	
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings");
+	FVector Direction = FVector(-1.0f, 0.0f, 0.0f);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings");
+	float Duraction = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings");
+	float Speed = 500.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings");
+	float Value = 0.5f;
+
+	void InitScale(FVector NewScale);
+	
 
 };

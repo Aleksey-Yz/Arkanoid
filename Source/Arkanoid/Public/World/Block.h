@@ -6,21 +6,37 @@
 #include "GameFramework/Actor.h"
 #include "Block.generated.h"
 
+class UStaticMeshComponent;
+class UPrimitiveComponent;
+class ULifeComponent;
+class UMaterialInterface;
+class ABonusParent;
+
 UCLASS()
 class ARKANOID_API ABlock : public AActor
 {
 	GENERATED_BODY()
+
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* StaticMesh = nullptr;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+	ULifeComponent* LifeComponent = nullptr;
+
+	TSubclassOf<AActor> BonusClass = nullptr;
 	
 public:	
 	// Sets default values for this actor's properties
 	ABlock();
 
-protected:
-	// Called when the game starts or when spawned
+protected: 
 	virtual void BeginPlay() override;
+	virtual void NotifyHit(	UPrimitiveComponent* MyComp,AActor* Other, UPrimitiveComponent* OtherComp,	bool bSelfMoved,FVector HitLocation,FVector HitNormal,FVector NormalImpulse,const FHitResult& Hit) override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+
+public:
+	void Init( const FVector NewScale, const int32 LifeAmount, const TSubclassOf<ABonusParent>NewBonusClass=nullptr);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	TArray<UMaterialInterface*> LifeMaterials;
 
 };

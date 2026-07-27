@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "Ball.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeadEvent);
+
 class UArrowComponent;
 class UStaticMeshComponent;
 
@@ -33,7 +35,7 @@ struct FInitParameters
 	// Конструктор структуры
 	FInitParameters()
 	{
-		Scale = 1.0f;
+		Scale = 0.5f;
 		Power = 1;
 		Speed = 500.0f;
 		MaxSpeed = 2500.0f;
@@ -59,11 +61,18 @@ private:
 public:	
 	ABall();
 
+	UPROPERTY(BlueprintAssignable)
+	FOnDeadEvent OnDeadEvent;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")
+	UMaterialInterface* PowerMaterial = nullptr;
+
+
 	
 protected:
 	virtual void OnConstruction(const FTransform& Transform) override;
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	virtual void Destroyed() override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")
 	FInitParameters InitParameters;
@@ -71,8 +80,19 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Ball")
 	void Move(float DeltaTime);
 
-	void SetBallState(const EState NewState);
+	// Бонусы
+
+	FTimerHandle TimerBallPower;
+	UPROPERTY()
+	UMaterialInterface* DefaultMatrerial = nullptr;
+	void UpdateBallMaterial();
+	void ResetBallPower();
+
+	
 
 public:	
-
+	FORCEINLINE int32 GetPower() const { return Power; }
+	void SetBallState(const EState NewState);
+	void ChangeSpeed(const float Amount);
+	void ChangeBallPower(const int32 Amount, const float BonusTime);
 };

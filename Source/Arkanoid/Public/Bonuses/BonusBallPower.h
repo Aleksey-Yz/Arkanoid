@@ -13,5 +13,13 @@ UCLASS()
 class ARKANOID_API ABonusBallPower : public ABonusParent
 {
 	GENERATED_BODY()
+
+public:
+
+	ABonusBallPower();
+
+protected:
+
+	virtual void BonusAction(APaddle* Paddle) override;
 	
 };

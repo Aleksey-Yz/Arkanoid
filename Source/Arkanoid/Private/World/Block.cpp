@@ -2,26 +2,67 @@
 
 
 #include "World/Block.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/EngineTypes.h"
+#include "Components/LifeComponent.h"
+#include "World/Ball.h"
+#include "Bonuses/BonusParent.h"
 
 // Sets default values
 ABlock::ABlock()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
+
+	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Mesh"));
+	SetRootComponent(StaticMesh);
+
+	LifeComponent = CreateDefaultSubobject<ULifeComponent>(TEXT("Life Component"));
 
 }
 
-// Called when the game starts or when spawned
 void ABlock::BeginPlay()
 {
 	Super::BeginPlay();
-	
+		if (LifeMaterials.IsValidIndex(LifeComponent->GetLife() - 1))
+			StaticMesh->SetMaterial(0, LifeMaterials[LifeComponent->GetLife() - 1]);
 }
 
-// Called every frame
-void ABlock::Tick(float DeltaTime)
+void ABlock::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
 {
-	Super::Tick(DeltaTime);
+	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
+
+	if (const auto Ball = Cast<ABall> (Other))
+
+		if (IsValid(LifeComponent))
+		{
+			LifeComponent->TakeDamage(Ball->GetPower());
+
+			if (!LifeComponent->IsAlive())
+			{
+				if (BonusClass && GetWorld())
+				{
+					auto CurrentBonus=GetWorld()->SpawnActor<ABonusParent>(BonusClass, GetActorLocation(), GetActorRotation());
+					CurrentBonus-> InitScale(GetActorScale3D());
+				}
+				Destroy();
+			}
+			else
+			{
+				if (LifeMaterials.IsValidIndex(LifeComponent->GetLife() - 1))
+					StaticMesh->SetMaterial(0, LifeMaterials[LifeComponent->GetLife() - 1]);
+			}
+		}
+}
+
+void ABlock::Init(const FVector NewScale, const int32 LifeAmount, const TSubclassOf<ABonusParent>NewBonusClass)
+{
+	SetActorScale3D(NewScale);
+	BonusClass = NewBonusClass;
+	LifeComponent->SetLife(LifeAmount);
+
+	if (LifeMaterials.IsValidIndex(LifeComponent->GetLife() - 1))
+		StaticMesh->SetMaterial(0, LifeMaterials[LifeComponent->GetLife() - 1]);
 
 }
 

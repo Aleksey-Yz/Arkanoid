@@ -40,8 +40,14 @@ void ABall::BeginPlay()
 
 	
 	Direction = GetActorForwardVector().GetSafeNormal();
-	SetBallState(EState::Moving);
 	
+	if (StaticMesh)
+	{
+		DefaultMatrerial = StaticMesh->GetMaterial(0);
+	}
+
+	UpdateBallMaterial();
+	SetBallState(EState::Moving);
 }
 
 // Called every frame
@@ -65,6 +71,13 @@ void ABall::Tick(float DeltaTime)
 
 }
 
+void ABall::Destroyed()
+{
+	OnDeadEvent.Broadcast();
+
+	Super::Destroyed();
+}
+
 void ABall::Move(float DeltaTime)
 {
 	const FVector Offset = Direction * Speed * DeltaTime;
@@ -86,8 +99,57 @@ void ABall::Move(float DeltaTime)
 
 	}
 }
+void ABall::UpdateBallMaterial()
+{
+	if (!StaticMesh)
+		return;
+
+	if (Power>1)
+	{
+		if (PowerMaterial)
+		{
+			StaticMesh->SetMaterial(0, PowerMaterial);
+		}
+	}
+	else
+	{
+		StaticMesh->SetMaterial(0, DefaultMatrerial);
+	}
+}
+
+void ABall::ResetBallPower()
+{
+	Power = InitParameters.Power;
+	UpdateBallMaterial();
+}
+
 void ABall::SetBallState(const EState NewState)
 {
 	State = NewState;
+}
+
+void ABall::ChangeSpeed(const float Amount)
+{
+	if (Amount < 0)
+	{
+		Speed = FMath::Min(Speed - Speed * Amount, InitParameters.Speed);
+	}
+	else if (Amount > 0)
+	{
+		Speed = FMath::Max(Speed + Speed * Amount, InitParameters.MaxSpeed);
+	}
+}
+
+void ABall::ChangeBallPower(const int32 Amount, const float BonusTime)
+{
+	if (Amount != 0 && BonusTime > 0)
+	{
+		if (!GetWorld()->GetTimerManager().IsTimerActive(TimerBallPower))
+		{
+			Power = FMath::Max(Power + Amount, 1);
+			UpdateBallMaterial();
+		}
+		GetWorld()->GetTimerManager().SetTimer(TimerBallPower, this, &ABall::ResetBallPower, BonusTime, false);
+	}
 }
 
