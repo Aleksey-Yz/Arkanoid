@@ -14,4 +14,16 @@ class ARKANOID_API ABonusTimeSlow : public ABonusParent
 {
 	GENERATED_BODY()
 	
+public:
+    ABonusTimeSlow();
+
+protected:
+    virtual void BonusAction(APaddle* Paddle) override;
+    
+
+private:
+    UFUNCTION()
+    void ResetTime();
+    FTimerHandle TimerHandle;
+
 };
