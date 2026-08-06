@@ -63,7 +63,7 @@ void ABall::Tick(float DeltaTime)
 		Move(DeltaTime);
 		break;
 	default:
-		UE_LOG(LogTemp, Display, TEXT("Unknown State Ball"));
+		//UE_LOG(LogTemp, Display, TEXT("Unknown State Ball"));
 		break;
 	}
 

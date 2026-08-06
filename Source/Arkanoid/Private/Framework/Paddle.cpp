@@ -8,6 +8,8 @@
 #include "Components/ArrowComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "World/Ball.h"
+#include "Framework/ArkanoidPC.h"
+#include "Framework/ArkanoidGameMode.h"
 
 
 void APaddle::SpawnBallLives()
@@ -135,7 +137,12 @@ void APaddle::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void APaddle::ExitGame()
 {
-	UGameplayStatics::OpenLevel(GetWorld(), "Menu", true);
+	//UGameplayStatics::OpenLevel(GetWorld(), "Menu", true);
+
+	if (const auto Pc = Cast<AArkanoidPC>(Controller))
+	{
+		Pc->ExitButtonPressed();
+	}
 }
 
 void APaddle::StartGame()
@@ -181,6 +188,11 @@ void APaddle::SpawnBall()
 
 void APaddle::BallIsDead()
 {
+	if (CurrentBall)
+	{
+		CurrentBall->OnDeadEvent.RemoveDynamic(this, &APaddle::BallIsDead);
+	}
+
 	CurrentBall = nullptr;
 	Lives = FMath::Max(Lives -1, 0);
 
@@ -190,6 +202,12 @@ void APaddle::BallIsDead()
 		BallLives[Lives - 1]->DestroyComponent();
 		BallLives.RemoveAt(Lives-1);
 		UpdateBallLivesLocation();
+	}
+	else
+	{
+		if (const auto Gm = Cast<AArkanoidGameMode>(GetWorld()->GetAuthGameMode()))
+		Gm->GameEnded(false);
+
 	}
 }
 
